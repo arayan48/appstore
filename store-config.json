@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "store_id": "io.github.arayan48.appstore",
+  "name": {
+    "en_US": "arayan48 Apps",
+    "fr_FR": "Apps arayan48"
+  },
+  "description": {
+    "en_US": "Self-hosted apps packaged by arayan48 for ZimaOS and CasaOS.",
+    "fr_FR": "Applications auto-hébergées préparées par arayan48 pour ZimaOS et CasaOS."
+  },
+  "maintainer": "arayan48",
+  "url": "https://github.com/arayan48/appstore"
+}

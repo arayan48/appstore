@@ -1,0 +1,143 @@
+name: flyto
+
+services:
+  flyto:
+    image: ghcr.io/arayan48/flyto:v0.3.2
+    container_name: flyto
+    restart: unless-stopped
+    environment:
+      FLYTO_DB_URL: postgres://flyto:change-me@database:5432/flyto
+      FLYTO_REDIS_URL: redis://redis:6379
+      FLYTO_ADMIN_EMAIL: admin@example.com
+      FLYTO_ADMIN_PASSWORD: change-me-too
+      FLYTO_PUBLIC_URL: ""
+      FLYTO_TRUST_PROXY: ""
+      TZ: $TZ
+    # ZimaOS forces the default bridge, where service names don't resolve
+    network_mode: bridge
+    links:
+      - database
+      - redis
+    ports:
+      - target: 3000
+        published: "3000"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: /DATA/AppData/flyto/data
+        target: /data
+    x-casaos:
+      envs:
+        - container: FLYTO_DB_URL
+          description:
+            en_US: PostgreSQL connection URL (password must match the database service)
+            fr_FR: URL de connexion PostgreSQL (le mot de passe doit être celui du service database)
+        - container: FLYTO_ADMIN_EMAIL
+          description:
+            en_US: E-mail of the first admin account, created on the first start
+            fr_FR: E-mail du premier compte administrateur, créé au premier démarrage
+        - container: FLYTO_ADMIN_PASSWORD
+          description:
+            en_US: Password of the first admin account (at least 10 characters), change it afterwards in My account
+            fr_FR: Mot de passe du premier administrateur (10 caractères minimum), à changer ensuite dans Mon compte
+        - container: FLYTO_PUBLIC_URL
+          description:
+            en_US: Public address of Flyto (https://files.example.com/), used in e-mails and share links; empty on a local network
+            fr_FR: Adresse publique de Flyto (https://fichiers.exemple.fr/), utilisée dans les e-mails et les liens ; vide sur un réseau local
+        - container: FLYTO_TRUST_PROXY
+          description:
+            en_US: 1 behind a reverse proxy or a Cloudflare tunnel, so that each visitor keeps its own IP; empty otherwise
+            fr_FR: 1 derrière un reverse proxy ou un tunnel Cloudflare, pour que chaque visiteur garde son adresse IP ; vide sinon
+        - container: FLYTO_REDIS_URL
+          description:
+            en_US: Redis cache for sessions, rate limits and dashboards
+            fr_FR: Cache Redis pour les sessions, les limites de tentatives et le tableau de bord
+      ports:
+        - container: "3000"
+          description:
+            en_US: Web UI
+            fr_FR: Interface web
+      volumes:
+        - container: /data
+          description:
+            en_US: Uploaded files
+            fr_FR: Fichiers envoyés
+
+  database:
+    image: postgres:17-alpine
+    container_name: flyto-database
+    restart: unless-stopped
+    network_mode: bridge
+    environment:
+      POSTGRES_USER: flyto
+      POSTGRES_PASSWORD: change-me
+      POSTGRES_DB: flyto
+    volumes:
+      - type: bind
+        source: /DATA/AppData/flyto/postgres
+        target: /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flyto -d flyto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    x-casaos:
+      envs:
+        - container: POSTGRES_PASSWORD
+          description:
+            en_US: Database password (must match FLYTO_DB_URL)
+            fr_FR: Mot de passe de la base (doit correspondre à FLYTO_DB_URL)
+      volumes:
+        - container: /var/lib/postgresql/data
+          description:
+            en_US: Database files
+            fr_FR: Fichiers de la base de données
+
+  redis:
+    image: redis:8-alpine
+    container_name: flyto-redis
+    restart: unless-stopped
+    network_mode: bridge
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+x-casaos:
+  id: io.github.arayan48.flyto
+  main: flyto
+  index: /
+  port_map: "3000"
+  scheme: http
+  icon: https://raw.githubusercontent.com/arayan48/appstore/main/Apps/Flyto/icon.png
+  screenshot_link:
+    - https://raw.githubusercontent.com/arayan48/appstore/main/Apps/Flyto/screenshot-1.png
+  title:
+    en_US: Flyto
+  tagline:
+    en_US: Self-hosted file sharing, one link for everyone
+    fr_FR: Partage de fichiers auto-hébergé, un lien pour tout le monde
+  description:
+    en_US: Upload files with an account and share them with a single link, no account needed to download. Admin dashboard, quotas, invitations.
+    fr_FR: Envoyez des fichiers avec un compte et partagez-les avec un seul lien, sans compte pour télécharger. Tableau de bord d'administration, quotas, invitations.
+  tips:
+    before_install:
+      en_US: Change POSTGRES_PASSWORD (database service) and the same password in FLYTO_DB_URL, then FLYTO_ADMIN_EMAIL and FLYTO_ADMIN_PASSWORD. If /DATA/AppData/flyto/postgres already exists, keep the password it was created with.
+      fr_FR: Change POSTGRES_PASSWORD (service database) et le même mot de passe dans FLYTO_DB_URL, puis FLYTO_ADMIN_EMAIL et FLYTO_ADMIN_PASSWORD. Si /DATA/AppData/flyto/postgres existe déjà, garde le mot de passe avec lequel la base a été créée.
+  author: arayan48
+  developer: arayan48
+  category: Productivity
+  architectures:
+    - amd64
+    - arm64
+  version: "0.3.2"
+  update_at: "2026-10-28"
+  release_notes:
+    en_US: https://github.com/arayan48/flyto/releases/tag/v0.3.2
+    fr_FR: https://github.com/arayan48/flyto/releases/tag/v0.3.2
+  website: https://github.com/arayan48/flyto
+  repo: https://github.com/arayan48/flyto
+  support: https://github.com/arayan48/flyto/issues
+  docs: https://github.com/arayan48/flyto/tree/main/docs
