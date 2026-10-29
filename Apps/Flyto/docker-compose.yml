@@ -2,7 +2,7 @@ name: flyto
 
 services:
   flyto:
-    image: ghcr.io/arayan48/flyto:v0.8.1
+    image: ghcr.io/arayan48/flyto:v0.9.0
     container_name: flyto
     restart: unless-stopped
     environment:
@@ -134,11 +134,11 @@ x-casaos:
   architectures:
     - amd64
     - arm64
-  version: "0.8.1"
+  version: "0.9.0"
   update_at: "2026-10-29"
   release_notes:
-    en_US: https://github.com/arayan48/flyto/releases/tag/v0.8.1
-    fr_FR: https://github.com/arayan48/flyto/releases/tag/v0.8.1
+    en_US: https://github.com/arayan48/flyto/releases/tag/v0.9.0
+    fr_FR: https://github.com/arayan48/flyto/releases/tag/v0.9.0
   website: https://github.com/arayan48/flyto
   repo: https://github.com/arayan48/flyto
   support: https://github.com/arayan48/flyto/issues
