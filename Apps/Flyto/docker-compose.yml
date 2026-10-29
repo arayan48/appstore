@@ -12,7 +12,7 @@ services:
       FLYTO_ADMIN_PASSWORD: change-me-too
       FLYTO_PUBLIC_URL: ""
       FLYTO_TRUST_PROXY: ""
-      TZ: $TZ
+      TZ: Europe/Paris
     # ZimaOS forces the default bridge, where service names don't resolve
     network_mode: bridge
     links:
