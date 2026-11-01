@@ -2,7 +2,7 @@ name: obscura
 
 services:
   obscura:
-    image: ghcr.io/arayan48/obscura:v1.2.0
+    image: ghcr.io/arayan48/obscura:v1.2.1
     container_name: obscura
     restart: unless-stopped
     # ZimaOS forces the default bridge, where service names don't resolve
@@ -132,5 +132,5 @@ x-casaos:
   category: Gallery
   architectures:
     - amd64
-  version: "1.2.0"
+  version: "1.2.1"
   update_at: "2026-11-01"
