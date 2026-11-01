@@ -1,52 +1,19 @@
 name: obscura
 
 services:
-  nginx:
-    image: ghcr.io/arayan48/obscura-nginx:v1.0.0
+  obscura:
+    image: ghcr.io/arayan48/obscura:v1.1.0
     container_name: obscura
     restart: unless-stopped
-    environment:
-      TRUSTED_PROXIES: ""
     # ZimaOS forces the default bridge, where service names don't resolve
     network_mode: bridge
     links:
-      - backend
-      - frontend
-    depends_on:
-      backend:
-        condition: service_healthy
-      frontend:
-        condition: service_healthy
-    ports:
-      - target: 80
-        published: "8095"
-        protocol: tcp
-    volumes:
-      - type: bind
-        source: /DATA/AppData/obscura/storage
-        target: /var/www/storage
-        read_only: true
-    x-casaos:
-      envs:
-        - container: TRUSTED_PROXIES
-          description:
-            en_US: Proxies allowed to set the visitor IP (CIDR, space separated); empty = private networks (Cloudflare tunnel on the NAS)
-            fr_FR: Proxys autorisés à transmettre l'IP du visiteur (CIDR séparés par des espaces) ; vide = réseaux privés (tunnel Cloudflare sur le NAS)
-      ports:
-        - container: "80"
-          description:
-            en_US: Web UI
-            fr_FR: Interface web
-
-  backend:
-    image: ghcr.io/arayan48/obscura-backend:v1.0.0
-    container_name: obscura-backend
-    restart: unless-stopped
-    network_mode: bridge
-    links:
       - postgres
+      - redis
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     environment:
       NODE_ENV: production
@@ -54,8 +21,13 @@ services:
       DB_NAME: obscura
       DB_USER: obscura
       DB_PASSWORD: change-me
+      REDIS_URL: redis://redis:6379
       COOKIE_SECURE: "true"
       TZ: Europe/Paris
+    ports:
+      - target: 3000
+        published: "8095"
+        protocol: tcp
     volumes:
       - type: bind
         source: /DATA/AppData/obscura/storage
@@ -73,6 +45,15 @@ services:
           description:
             en_US: true when Obscura is reached over HTTPS (Cloudflare tunnel); false only for plain HTTP on the local network
             fr_FR: true quand Obscura est ouvert en HTTPS (tunnel Cloudflare) ; false seulement pour un accès HTTP sur le réseau local
+        - container: REDIS_URL
+          description:
+            en_US: Redis cache for accounts, permissions and rate limits
+            fr_FR: Cache Redis pour les comptes, les permissions et les limites de requêtes
+      ports:
+        - container: "3000"
+          description:
+            en_US: Web UI
+            fr_FR: Interface web
       volumes:
         - container: /app/storage
           description:
@@ -82,12 +63,6 @@ services:
           description:
             en_US: Encryption master key (keep it with the database backups)
             fr_FR: Clé maître de chiffrement (à sauvegarder avec la base)
-
-  frontend:
-    image: ghcr.io/arayan48/obscura-frontend:v1.0.0
-    container_name: obscura-frontend
-    restart: unless-stopped
-    network_mode: bridge
 
   postgres:
     image: postgres:16-alpine
@@ -113,17 +88,29 @@ services:
       envs:
         - container: POSTGRES_PASSWORD
           description:
-            en_US: Database password (must match DB_PASSWORD of the backend service)
-            fr_FR: Mot de passe de la base (doit être le même que DB_PASSWORD du service backend)
+            en_US: Database password (must match DB_PASSWORD of the obscura service)
+            fr_FR: Mot de passe de la base (doit être le même que DB_PASSWORD du service obscura)
       volumes:
         - container: /var/lib/postgresql/data
           description:
             en_US: Database files
             fr_FR: Fichiers de la base de données
 
+  redis:
+    image: redis:7-alpine
+    container_name: obscura-redis
+    restart: unless-stopped
+    network_mode: bridge
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 x-casaos:
   id: io.github.arayan48.obscura
-  main: nginx
+  main: obscura
   index: /
   port_map: "8095"
   scheme: http
@@ -138,12 +125,12 @@ x-casaos:
     fr_FR: Envoyez et classez images et vidéos, partagez-les par liens privés limités à une liste blanche d'IP. Comptes, rôles granulaires, 2FA, journaux, sauvegardes.
   tips:
     before_install:
-      en_US: Set the same new password in POSTGRES_PASSWORD (postgres service) and DB_PASSWORD (backend service). Then open Obscura through its HTTPS address (Cloudflare tunnel) to create the Super Admin on the setup page.
-      fr_FR: Mets le même nouveau mot de passe dans POSTGRES_PASSWORD (service postgres) et DB_PASSWORD (service backend). Ouvre ensuite Obscura par son adresse HTTPS (tunnel Cloudflare) pour créer le Super Admin sur la page de setup.
+      en_US: Set the same new password in POSTGRES_PASSWORD (postgres service) and DB_PASSWORD (obscura service). Then open Obscura through its HTTPS address (Cloudflare tunnel) to create the Super Admin on the setup page.
+      fr_FR: Mets le même nouveau mot de passe dans POSTGRES_PASSWORD (service postgres) et DB_PASSWORD (service obscura). Ouvre ensuite Obscura par son adresse HTTPS (tunnel Cloudflare) pour créer le Super Admin sur la page de setup.
   author: arayan48
   developer: arayan48
   category: Gallery
   architectures:
     - amd64
-  version: "1.0.0"
+  version: "1.1.0"
   update_at: "2026-11-01"
