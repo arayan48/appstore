@@ -1,0 +1,66 @@
+name: mibox-helper
+
+services:
+  mibox-helper:
+    image: alpine:3.20
+    container_name: mibox-helper
+    restart: unless-stopped
+    # host network: adb must reach the box on the LAN
+    network_mode: host
+    environment:
+      MIBOX_HOST: 192.168.1.211:5555
+      TZ: Europe/Paris
+    volumes:
+      - type: bind
+        source: /DATA/AppData/mibox-helper
+        target: /root/.android
+    # every minute: restart the monitor helper on the box if it stopped (box reboot)
+    command:
+      - sh
+      - -c
+      - >-
+        apk add -q android-tools;
+        while true; do
+        adb connect $$MIBOX_HOST >/dev/null;
+        adb -s $$MIBOX_HOST shell pgrep -f moniteur-helper >/dev/null ||
+        adb -s $$MIBOX_HOST shell "setsid sh /data/local/tmp/moniteur-helper.sh </dev/null >/dev/null 2>&1 &";
+        sleep 60; done
+    x-casaos:
+      envs:
+        - container: MIBOX_HOST
+          description:
+            en_US: Android box address with network ADB (ip:5555)
+            fr_FR: Adresse de la box Android avec ADB réseau (ip:5555)
+      volumes:
+        - container: /root/.android
+          description:
+            en_US: ADB key (keeps the box authorization)
+            fr_FR: Clé ADB (garde l'autorisation donnée sur la box)
+
+x-casaos:
+  id: io.github.arayan48.mibox-helper
+  main: mibox-helper
+  icon: https://raw.githubusercontent.com/arayan48/appstore/main/Apps/MiboxHelper/icon.svg
+  title:
+    en_US: Mi Box Helper
+  tagline:
+    en_US: Keeps the Mi Box system monitor live after reboots
+    fr_FR: Garde le moniteur système de la Mi Box en direct après un redémarrage
+  description:
+    en_US: Checks every minute over ADB that the monitor helper runs on the Android box, and restarts it if needed. No web interface.
+    fr_FR: Vérifie chaque minute par ADB que le helper du moniteur tourne sur la box Android, et le relance si besoin. Pas d'interface web.
+  tips:
+    before_install:
+      en_US: After install, accept "Allow USB debugging" (tick "Always allow") on the TV.
+      fr_FR: Après l'installation, accepte « Autoriser le débogage » (coche « Toujours autoriser ») sur la télé.
+  author: arayan48
+  developer: arayan48
+  category: Home
+  architectures:
+    - amd64
+    - arm64
+  version: "1.0.0"
+  update_at: "2026-11-02"
+  website: https://github.com/arayan48/appstore
+  repo: https://github.com/arayan48/appstore
+  support: https://github.com/arayan48/appstore/issues
