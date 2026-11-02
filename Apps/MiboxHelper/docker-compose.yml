@@ -8,12 +8,12 @@ services:
     # host network: adb must reach the box on the LAN
     network_mode: host
     environment:
-      MIBOX_HOST: 192.168.1.211:5555
       TZ: Europe/Paris
     volumes:
       - type: bind
         source: /DATA/AppData/mibox-helper
         target: /root/.android
+    # no $ variables: ZimaOS re-renders the compose and empties them
     # every minute: restart the monitor helper on the box if it stopped (box reboot)
     command:
       - sh
@@ -21,16 +21,11 @@ services:
       - >-
         apk add -q android-tools;
         while true; do
-        adb connect $$MIBOX_HOST >/dev/null;
-        adb -s $$MIBOX_HOST shell pgrep -f moniteur-helper >/dev/null ||
-        adb -s $$MIBOX_HOST shell "setsid sh /data/local/tmp/moniteur-helper.sh </dev/null >/dev/null 2>&1 &";
+        adb connect 192.168.1.211:5555 >/dev/null;
+        adb -s 192.168.1.211:5555 shell pgrep -f moniteur-helper >/dev/null ||
+        adb -s 192.168.1.211:5555 shell "setsid sh /data/local/tmp/moniteur-helper.sh </dev/null >/dev/null 2>&1 &";
         sleep 60; done
     x-casaos:
-      envs:
-        - container: MIBOX_HOST
-          description:
-            en_US: Android box address with network ADB (ip:5555)
-            fr_FR: Adresse de la box Android avec ADB réseau (ip:5555)
       volumes:
         - container: /root/.android
           description:
@@ -59,7 +54,7 @@ x-casaos:
   architectures:
     - amd64
     - arm64
-  version: "1.0.0"
+  version: "1.0.1"
   update_at: "2026-11-02"
   website: https://github.com/arayan48/appstore
   repo: https://github.com/arayan48/appstore
