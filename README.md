@@ -7,6 +7,7 @@ modification de `main`.
 | App | Description |
 | --- | --- |
 | [Flyto](https://github.com/arayan48/flyto) | Partage de fichiers auto-hébergé |
+| Mi Box Helper | Garde le moniteur de la Mi Box en direct après un redémarrage |
 
 ## Ajouter le store à ZimaOS
 
