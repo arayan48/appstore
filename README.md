@@ -8,6 +8,7 @@ modification de `main`.
 | --- | --- |
 | [Flyto](https://github.com/arayan48/flyto) | Partage de fichiers auto-hébergé |
 | Mi Box Helper | Garde le moniteur de la Mi Box en direct après un redémarrage |
+| [Kan](https://github.com/kanbn/kan) | Tableaux kanban, alternative à Trello |
 
 ## Ajouter le store à ZimaOS
 
