@@ -1,0 +1,129 @@
+name: kan
+
+services:
+  kan:
+    image: ghcr.io/kanbn/kan:0.7.0
+    container_name: kan
+    restart: unless-stopped
+    # ZimaOS forces the default bridge, where service names don't resolve
+    network_mode: bridge
+    links:
+      - postgres
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      NEXT_PUBLIC_BASE_URL: http://192.168.1.241:8096
+      BETTER_AUTH_SECRET: change-me-with-32-random-characters
+      POSTGRES_URL: postgresql://kan:change-me@postgres:5432/kan_db
+      NEXT_PUBLIC_ALLOW_CREDENTIALS: "true"
+      NEXT_PUBLIC_DISABLE_EMAIL: "true"
+      TZ: Europe/Paris
+    ports:
+      - target: 3000
+        published: "8096"
+        protocol: tcp
+    x-casaos:
+      envs:
+        - container: NEXT_PUBLIC_BASE_URL
+          description:
+            en_US: Address used to open Kan (LAN address or HTTPS tunnel URL)
+            fr_FR: Adresse utilisée pour ouvrir Kan (adresse locale ou URL HTTPS du tunnel)
+        - container: BETTER_AUTH_SECRET
+          description:
+            en_US: Random secret of 32+ characters for sessions
+            fr_FR: Secret aléatoire de 32 caractères ou plus pour les sessions
+        - container: POSTGRES_URL
+          description:
+            en_US: Database URL (password must match POSTGRES_PASSWORD of the postgres service)
+            fr_FR: URL de la base (le mot de passe doit être celui de POSTGRES_PASSWORD du service postgres)
+        - container: NEXT_PUBLIC_ALLOW_CREDENTIALS
+          description:
+            en_US: Allow email and password sign-up
+            fr_FR: Autoriser l'inscription par e-mail et mot de passe
+      ports:
+        - container: "3000"
+          description:
+            en_US: Web UI
+            fr_FR: Interface web
+
+  migrate:
+    image: ghcr.io/kanbn/kan-migrate:0.7.0
+    container_name: kan-migrate
+    restart: "no"
+    network_mode: bridge
+    links:
+      - postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_URL: postgresql://kan:change-me@postgres:5432/kan_db
+    x-casaos:
+      envs:
+        - container: POSTGRES_URL
+          description:
+            en_US: Same URL as the kan service
+            fr_FR: Même URL que le service kan
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: kan-database
+    restart: unless-stopped
+    network_mode: bridge
+    environment:
+      POSTGRES_USER: kan
+      POSTGRES_PASSWORD: change-me
+      POSTGRES_DB: kan_db
+    volumes:
+      - type: bind
+        source: /DATA/AppData/kan/postgres
+        target: /var/lib/postgresql/data
+    healthcheck:
+      # -h 127.0.0.1: TCP, the init server answers "ready" on the socket before port 5432 opens
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U kan -d kan_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    x-casaos:
+      envs:
+        - container: POSTGRES_PASSWORD
+          description:
+            en_US: Database password (must match the one in POSTGRES_URL)
+            fr_FR: Mot de passe de la base (doit être le même que dans POSTGRES_URL)
+      volumes:
+        - container: /var/lib/postgresql/data
+          description:
+            en_US: Database files
+            fr_FR: Fichiers de la base de données
+
+x-casaos:
+  id: io.github.arayan48.kan
+  main: kan
+  index: /
+  port_map: "8096"
+  scheme: http
+  icon: https://raw.githubusercontent.com/arayan48/appstore/main/Apps/Kan/icon.png
+  screenshot_link:
+    - https://raw.githubusercontent.com/arayan48/appstore/main/Apps/Kan/screenshot-1.png
+  title:
+    en_US: Kan
+  tagline:
+    en_US: Open-source Trello alternative
+    fr_FR: Alternative open source à Trello
+  description:
+    en_US: Kanban boards with lists, cards, labels, comments, members and Trello import.
+    fr_FR: Tableaux kanban avec listes, cartes, étiquettes, commentaires, membres et import depuis Trello.
+  tips:
+    before_install:
+      en_US: Replace change-me in POSTGRES_PASSWORD and in both POSTGRES_URL. Set a random BETTER_AUTH_SECRET. Set NEXT_PUBLIC_BASE_URL to the address you open Kan with. File uploads (avatars, attachments) need S3 and are off.
+      fr_FR: Remplace change-me dans POSTGRES_PASSWORD et dans les deux POSTGRES_URL. Mets un BETTER_AUTH_SECRET aléatoire. Mets dans NEXT_PUBLIC_BASE_URL l'adresse avec laquelle tu ouvres Kan. L'envoi de fichiers (avatars, pièces jointes) demande S3 et n'est pas actif.
+  author: kanbn
+  developer: kanbn
+  category: Productivity
+  architectures:
+    - amd64
+    - arm64
+  version: "0.7.0"
+  update_at: "2026-11-07"
