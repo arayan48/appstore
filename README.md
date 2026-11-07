@@ -4,11 +4,12 @@ Store d'applications pour ZimaOS (et CasaOS), au format v2 du
 [store officiel](https://github.com/IceWhaleTech/CasaOS-AppStore). Il est publié sur GitHub Pages à chaque
 modification de `main`.
 
-| App | Description |
-| --- | --- |
-| [Flyto](https://github.com/arayan48/flyto) | Partage de fichiers auto-hébergé |
-| Mi Box Helper | Garde le moniteur de la Mi Box en direct après un redémarrage |
-| [Kan](https://github.com/kanbn/kan) | Tableaux kanban, alternative à Trello |
+| App | Description | Port |
+| --- | --- | --- |
+| [Flyto](https://github.com/arayan48/flyto) | Partage de fichiers auto-hébergé | 3000 |
+| Obscura | Hébergement de photos et vidéos | 8095 |
+| [Kan](https://github.com/kanbn/kan) | Tableaux kanban, alternative à Trello | 8096 |
+| Mi Box Helper | Garde le moniteur de la Mi Box en direct après un redémarrage | — |
 
 ## Ajouter le store à ZimaOS
 
