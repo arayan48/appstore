@@ -1,0 +1,87 @@
+name: home-web
+
+services:
+  home-web:
+    image: ghcr.io/arayan48/home-web:v0.1.0
+    container_name: home-web
+    restart: unless-stopped
+    # ZimaOS forces the default bridge, where service names don't resolve
+    network_mode: bridge
+    links:
+      - beszel
+    depends_on:
+      - beszel
+    environment:
+      BESZEL_URL: http://beszel:8090
+      BESZEL_USER: ""
+      BESZEL_PASSWORD: ""
+      TZ: Europe/Paris
+    ports:
+      - target: 8080
+        published: "8090"
+        protocol: tcp
+    x-casaos:
+      envs:
+        - container: BESZEL_USER
+          description:
+            en_US: Beszel account email (created in the Beszel UI, port 8091)
+            fr_FR: E-mail du compte Beszel (créé dans l'interface Beszel, port 8091)
+        - container: BESZEL_PASSWORD
+          description:
+            en_US: Beszel account password
+            fr_FR: Mot de passe du compte Beszel
+      ports:
+        - container: "8080"
+          description:
+            en_US: Web UI
+            fr_FR: Interface web
+
+  beszel:
+    image: henrygd/beszel:0.12.12
+    container_name: beszel
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - target: 8090
+        published: "8091"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: /DATA/AppData/home-web/beszel
+        target: /beszel_data
+    x-casaos:
+      ports:
+        - container: "8090"
+          description:
+            en_US: Beszel UI (machine stats)
+            fr_FR: Interface Beszel (stats des machines)
+      volumes:
+        - container: /beszel_data
+          description:
+            en_US: Beszel data
+            fr_FR: Données Beszel
+
+x-casaos:
+  id: io.github.arayan48.home-web
+  main: home-web
+  index: /
+  port_map: "8090"
+  icon: https://raw.githubusercontent.com/arayan48/appstore/main/Apps/HomeWeb/icon.svg
+  title:
+    en_US: home-web
+  tagline:
+    en_US: Browser home page with search, links and machine stats
+    fr_FR: "Page d'accueil du navigateur : recherche, liens et stats des machines"
+  description:
+    en_US: Google search with suggestions, grouped links with online status, and CPU/RAM/disk of each machine through Beszel.
+    fr_FR: Recherche Google avec suggestions, liens groupés avec leur état en ligne, et CPU/RAM/disque de chaque machine via Beszel.
+  author: arayan48
+  developer: arayan48
+  category: Home
+  architectures:
+    - amd64
+  version: "0.1.0"
+  update_at: "2026-11-18"
+  website: https://github.com/arayan48/home-web
+  repo: https://github.com/arayan48/home-web
+  support: https://github.com/arayan48/home-web/issues
