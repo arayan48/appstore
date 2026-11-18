@@ -10,6 +10,7 @@ modification de `main`.
 | Obscura | Hébergement de photos et vidéos | 8095 |
 | [Kan](https://github.com/kanbn/kan) | Tableaux kanban, alternative à Trello | 8096 |
 | Mi Box Helper | Garde le moniteur de la Mi Box en direct après un redémarrage | — |
+| [home-web](https://github.com/arayan48/home-web) | Page d’accueil : recherche, liens, stats des machines (avec Beszel) | 8090, 8091 |
 
 ## Ajouter le store à ZimaOS
 
