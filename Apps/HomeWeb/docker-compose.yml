@@ -2,7 +2,7 @@ name: home-web
 
 services:
   home-web:
-    image: ghcr.io/arayan48/home-web:v0.1.0
+    image: ghcr.io/arayan48/home-web:v0.1.1
     container_name: home-web
     restart: unless-stopped
     # ZimaOS forces the default bridge, where service names don't resolve
@@ -80,7 +80,7 @@ x-casaos:
   category: Home
   architectures:
     - amd64
-  version: "0.1.0"
+  version: "0.1.1"
   update_at: "2026-11-18"
   website: https://github.com/arayan48/home-web
   repo: https://github.com/arayan48/home-web
